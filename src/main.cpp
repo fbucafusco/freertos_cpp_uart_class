@@ -6,23 +6,18 @@ licence: see LICENCE file
 */
 
 #include <stdbool.h>
-#include "FreeRTOS.h"
-#include "FreeRTOSConfig.h"
-#include "task.h"
-#include "sapi.h"
-#include "semphr.h"
-
 #include "protocol.h"
 
-#define FRAME_MAX_SIZE  200
-#define FRAME_HEADER_SIZE  2
-extern "C" int main( void );
+#define FRAME_MAX_SIZE  200 // max size of a frame
+
 
 /**
    @brief Application code entry point.
  */
 void app( void* pvParameters )
 {
+    protocol p( UART_USB , 115200 );
+
     char data[FRAME_MAX_SIZE+1];    //<-- storage for the received data (+1 for null termination)
     uint16_t size;                  //<-- size of the received data
 
@@ -30,7 +25,7 @@ void app( void* pvParameters )
 
     while( true )
     {
-        size = protocol_wait_frame( data, FRAME_MAX_SIZE );
+        size = p.wait_frame( data , FRAME_MAX_SIZE );
 
         /* just to convert to NULL terminated for the printf */
         data[size] = '\0';
@@ -50,8 +45,6 @@ int main( void )
 {
     /* board initialization */
     boardConfig();
-
-    procotol_x_init( UART_USB, 115200 );
 
     /* create the task that acts as an applicatio layer */
     xTaskCreate(
